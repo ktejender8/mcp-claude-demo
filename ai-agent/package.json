@@ -1,0 +1,9 @@
+{
+  "name": "ai-agent",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "@kubernetes/client-node": "^0.20.2"
+  }
+}

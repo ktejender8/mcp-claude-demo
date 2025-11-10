@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: load-gen
+spec:
+  template:
+    spec:
+      containers:
+      - name: loader
+        image: curlimages/curl:7.88.1
+        command: ["/bin/sh","-c"]
+        args:
+          - for i in $(seq 1 500); do
+              curl -sS http://sample-app.default.svc.cluster.local/burn -o /dev/null &
+            done;
+            wait;
+            sleep 5
+      restartPolicy: Never
+  backoffLimit: 0

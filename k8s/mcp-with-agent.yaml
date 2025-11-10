@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-kubernetes
+  labels: { app: mcp-kubernetes }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: mcp-kubernetes }
+  template:
+    metadata:
+      labels: { app: mcp-kubernetes }
+    spec:
+      serviceAccountName: ai-agent
+      containers:
+      - name: mcp
+        image: mcp/kubernetes:latest
+        env:
+        - name: LOG_LEVEL
+          value: "info"
+        # If this image exits immediately in your environment, change command to keep alive temporarily:
+        # command: ["/bin/sh"], args: ["-c", "sleep 3600"]
+      - name: ai-agent
+        image: <REGISTRY>/ai-agent:<TAG>
+        env:
+        - name: CLAUDE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: claude-secret
+              key: apiKey
+        - name: AI_API_URL
+          value: "https://api.anthropic.com/v1/complete"   # Change to the Anthropic endpoint you use
+        - name: CLAUDE_MODEL
+          value: "claude-3-5-sonnet"
+        - name: PROM_ENDPOINT
+          value: "http://prometheus-operated.monitoring.svc.cluster.local:9090"
+        - name: TARGET_DEPLOYMENT
+          value: "sample-app"
+        - name: TARGET_NAMESPACE
+          value: "default"
+        - name: POLL_SEC
+          value: "30"
+        - name: COOLDOWN_SEC
+          value: "120"
+        - name: MAX_REPLICAS
+          value: "10"
+        - name: MIN_REPLICAS
+          value: "1"
+        resources:
+          requests: { cpu: "100m", memory: "128Mi" }
+          limits: { cpu: "500m", memory: "256Mi" }
