@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-agent
+  labels:
+    app: ai-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-agent
+  template:
+    metadata:
+      labels:
+        app: ai-agent
+    spec:
+      containers:
+        - name: ai-agent
+          image: testacr12311.azurecr.io/ai-agent:v12
+          imagePullPolicy: Always
+          env:
+            - name: CLAUDE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-agent-secrets
+                  key: CLAUDE_API_KEY
+
+            - name: CLAUDE_MODEL
+              valueFrom:
+                secretKeyRef:
+                  name: ai-agent-secrets
+                  key: CLAUDE_MODEL
+
+            - name: DASHBOARD_URL
+              value: "http://mcp-dashboard.default.svc.cluster.local:3000"
+
+            - name: NODE_ENV
+              value: "production"
+
+          ports:
+            - containerPort: 8080
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-agent
+spec:
+  selector:
+    app: ai-agent
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP

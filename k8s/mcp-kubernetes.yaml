@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-kubernetes
+  labels:
+    app: mcp-kubernetes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp-kubernetes
+  template:
+    metadata:
+      labels:
+        app: mcp-kubernetes
+    spec:
+      containers:
+        - name: mcp
+          image: testacr12311.azurecr.io/mcp-kubernetes:v1
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh"]
+          args:
+            - -c
+            - |
+              echo " Starting Kubernetes MCP server v0.1.0";
+              if [ -f ./mcp ]; then
+                echo "Running MCP scan in background...";
+                ./mcp scan --namespace default &
+              else
+                echo " 'mcp' binary not found, keeping container alive.";
+              fi;
+              sleep 3600
+          env:
+            - name: CLAUDE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-agent-secrets
+                  key: CLAUDE_API_KEY
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-kubernetes
+spec:
+  selector:
+    app: mcp-kubernetes
+  ports:
+    - port: 8081
+      targetPort: 8081
+  type: ClusterIP

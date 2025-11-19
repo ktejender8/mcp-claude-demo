@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-dashboard
+  labels: { app: mcp-dashboard }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: mcp-dashboard }
+  template:
+    metadata:
+      labels: { app: mcp-dashboard }
+    spec:
+      containers:
+      - name: dashboard
+        image: testacr12311.azurecr.io/dashboard:v5
+        env:
+        - name: TARGET_DEPLOYMENT
+          value: "sample-app"
+        - name: TARGET_NAMESPACE
+          value: "default"
+        - name: PROM_ENDPOINT
+          value: "http://prometheus.monitoring.svc.cluster.local:9090"
+        - name: CLAUDE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: claude-secret
+              key: apiKey
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-dashboard
+spec:
+  selector:
+    app: mcp-dashboard
+  ports:
+  - port: 3000
+    targetPort: 3000
+  type: ClusterIP

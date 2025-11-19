@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: sample-app
-        image: <REGISTRY>/sample-app:<TAG>
+        image: testacr12311.azurecr.io/sample-app:v1
         ports:
         - containerPort: 3000
         resources:

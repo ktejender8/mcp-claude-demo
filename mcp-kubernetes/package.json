@@ -1,0 +1,7 @@
+{
+  "name": "mcp-kubernetes",
+  "version": "1.0.0",
+  "description": "MCP Kubernetes integration server",
+  "main": "server.js",
+  "license": "MIT"
+}
